@@ -61,8 +61,6 @@ int main(int argc, char**argv) {
         }
     }
 
-    printf("N is equal to %d\n", N);
-
     // Allocate memory and initialize data
     Timer timer;
     unsigned char* reference = (unsigned char*) malloc(N*sizeof(unsigned char));
