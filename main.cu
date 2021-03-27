@@ -25,18 +25,6 @@ void nw_cpu(unsigned char* reference, unsigned char* query, int* matrix, unsigne
     }
 }
 
-void verify(int* matrix_cpu, int* matrix_gpu, unsigned int N) {
-    for (unsigned int q = 0; q < N; ++q) {
-        for (unsigned int r = 0; r < N; ++r) {
-            if(matrix_cpu[q*N + r] != matrix_gpu[q*N + r]) {
-                printf("\033[1;31mMismatch at q = %u, r = %u (CPU result = %d, GPU result = %d)\033[0m\n", q, r, matrix_cpu[q*N + r], matrix_gpu[q*N + r]);
-                return;
-            }
-        }
-    }
-    printf("Verification succeeded\n");
-}
-
 void generateQuery(unsigned char* reference, unsigned char* query, unsigned int N) {
     const float PROB_MATCH = 0.80f;
     const float PROB_INS   = 0.10f;
@@ -63,7 +51,7 @@ void generateQuery(unsigned char* reference, unsigned char* query, unsigned int 
 int main(int argc, char**argv) {
 
     // Parse arguments
-    unsigned int N = 32000;
+    unsigned int N = (argc > 1)?(atoi(argv[1])):(32000);
 
     // Allocate memory and initialize data
     Timer timer;
