@@ -51,7 +51,17 @@ void generateQuery(unsigned char* reference, unsigned char* query, unsigned int 
 int main(int argc, char**argv) {
 
     // Parse arguments
-    unsigned int N = (argc > 1)?(atoi(argv[1])):(32000);
+    unsigned int N = 32000;
+
+    int opt;
+    while ((opt = getopt(argc, argv, "N:")) >= 0) {
+        switch (opt) {
+            case 'N': N = atoi(optarg); break;
+            default: fprintf(stderr, "\nUnrecognized option!\n"); exit(0);
+        }
+    }
+
+    printf("N is equal to %d\n", N);
 
     // Allocate memory and initialize data
     Timer timer;
