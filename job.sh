@@ -2,6 +2,7 @@
 
 #SBATCH --job-name=nw
 
+#SBATCH --mem=12000
 #SBATCH --partition=cudadev
 #SBATCH --gres=gpu
 #SBATCH --mail-type=ALL
@@ -11,6 +12,6 @@ module load cuda/latest
 
 make
 
-./nw 
+./nw -0 
 
 make clean
