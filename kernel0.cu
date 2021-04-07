@@ -86,9 +86,13 @@ void nw_gpu0(unsigned char* reference_d, unsigned char* query_d, int* matrix_d, 
 
         // First call concerns the upper left triangles
         nw_upper_left_kernel<<< numBlocks, numThreadsPerBlock >>>(reference_d, query_d, matrix_d, N, i, 0);
+		
+		cudaDeviceSynchronize();
 
         // Second call concerns the lower right triangles
         nw_lower_right_kernel<<< numBlocks, numThreadsPerBlock >>>(reference_d, query_d, matrix_d, N, i, 0);
+		
+		cudaDeviceSynchronize();
     }
  
     for (int i = numKernelCalls - 2; i >= 0; i--) {
@@ -97,9 +101,13 @@ void nw_gpu0(unsigned char* reference_d, unsigned char* query_d, int* matrix_d, 
 
         // Same as above; first call concerns the upper left triangles
         nw_upper_left_kernel<<< numBlocks, numThreadsPerBlock >>>(reference_d, query_d, matrix_d, N, numKernelCalls - 1, horizontalOffset);
+		
+		cudaDeviceSynchronize();
 
         // Second call concerns the lower right triangles 
         nw_lower_right_kernel<<< numBlocks, numThreadsPerBlock >>>(reference_d, query_d, matrix_d, N, numKernelCalls - 1, horizontalOffset);
+		
+		cudaDeviceSynchronize();
     }
 }
 
