@@ -1,7 +1,7 @@
 
 NVCC        = nvcc
 NVCC_FLAGS  = -O3
-OBJ         = main.o kernel0.o
+OBJ         = main.o kernel0.o kernel1.o
 EXE         = nw
 
 

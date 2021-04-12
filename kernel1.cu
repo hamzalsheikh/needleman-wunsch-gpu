@@ -2,7 +2,7 @@
 #include "common.h"
 #include "timer.h"
 
-__global__ void nw_upper_left_kernel(unsigned char* reference, unsigned char* query, int* matrix, unsigned int N, int verticalBlockOffset, int horizontalBlockOffset) {
+__global__ void nw_upper_left_kernel1(unsigned char* reference, unsigned char* query, int* matrix, unsigned int N, int verticalBlockOffset, int horizontalBlockOffset) {
 
     int verticalOffset = verticalBlockOffset*blockDim.x;
     int horizontalOffset = horizontalBlockOffset*blockDim.x;
@@ -39,7 +39,7 @@ __global__ void nw_upper_left_kernel(unsigned char* reference, unsigned char* qu
     }
 }
 
-__global__ void nw_lower_right_kernel(unsigned char* reference, unsigned char* query, int* matrix, unsigned int N, int verticalBlockOffset, int horizontalBlockOffset) {
+__global__ void nw_lower_right_kernel1(unsigned char* reference, unsigned char* query, int* matrix, unsigned int N, int verticalBlockOffset, int horizontalBlockOffset) {
 
     int verticalOffset = verticalBlockOffset*blockDim.x;
     int horizontalOffset = horizontalBlockOffset*blockDim.x;
@@ -85,12 +85,12 @@ void nw_gpu1(unsigned char* reference_d, unsigned char* query_d, int* matrix_d, 
         unsigned int numBlocks = i + 1;
 
         // First call concerns the upper left triangles
-        nw_upper_left_kernel<<< numBlocks, numThreadsPerBlock >>>(reference_d, query_d, matrix_d, N, i, 0);
+        nw_upper_left_kernel1<<< numBlocks, numThreadsPerBlock >>>(reference_d, query_d, matrix_d, N, i, 0);
 		
         cudaDeviceSynchronize();
 
         // Second call concerns the lower right triangles
-        nw_lower_right_kernel<<< numBlocks, numThreadsPerBlock >>>(reference_d, query_d, matrix_d, N, i, 0);
+        nw_lower_right_kernel1<<< numBlocks, numThreadsPerBlock >>>(reference_d, query_d, matrix_d, N, i, 0);
 		
         cudaDeviceSynchronize();
     }
@@ -100,12 +100,12 @@ void nw_gpu1(unsigned char* reference_d, unsigned char* query_d, int* matrix_d, 
         int horizontalOffset = numKernelCalls - 1 - i;
 
         // Same as above; first call concerns the upper left triangles
-        nw_upper_left_kernel<<< numBlocks, numThreadsPerBlock >>>(reference_d, query_d, matrix_d, N, numKernelCalls - 1, horizontalOffset);
+        nw_upper_left_kernel1<<< numBlocks, numThreadsPerBlock >>>(reference_d, query_d, matrix_d, N, numKernelCalls - 1, horizontalOffset);
 		
         cudaDeviceSynchronize();
 
         // Second call concerns the lower right triangles 
-        nw_lower_right_kernel<<< numBlocks, numThreadsPerBlock >>>(reference_d, query_d, matrix_d, N, numKernelCalls - 1, horizontalOffset);
+        nw_lower_right_kernel1<<< numBlocks, numThreadsPerBlock >>>(reference_d, query_d, matrix_d, N, numKernelCalls - 1, horizontalOffset);
 		
         cudaDeviceSynchronize();
     }

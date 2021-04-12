@@ -12,7 +12,7 @@ module load python/3
 module load python/pytorch
 module load cuda/latest
 
-python test.py
+python gpudetection.py
 
 make
 

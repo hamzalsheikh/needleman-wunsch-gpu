@@ -170,58 +170,7 @@ int main(int argc, char**argv) {
 
         }
 
-        if(runGPUVersion2) {
-
-            // Reset
-            cudaMemset(matrix_d, 0, N*N*sizeof(int));
-            cudaDeviceSynchronize();
-
-            // Compute on GPU with version 2
-            startTime(&timer);
-            nw_gpu2(reference_d, query_d, matrix_d, N);
-            cudaDeviceSynchronize();
-            stopTime(&timer);
-            printElapsedTime(timer, "GPU kernel time (version 2)", GREEN);
-
-            // Copy data from GPU
-            startTime(&timer);
-            cudaMemcpy(matrix_gpu, matrix_d, N*N*sizeof(int), cudaMemcpyDeviceToHost);
-            cudaDeviceSynchronize();
-            stopTime(&timer);
-            printElapsedTime(timer, "Copy from GPU time");
-
-            // Verify
-            verify(matrix_cpu, matrix_gpu, N);
-
-        }
-
-        if(runGPUVersion3) {
-
-
-            // Reset
-            cudaMemset(matrix_d, 0, N*N*sizeof(int));
-            cudaDeviceSynchronize();
-
-            // Compute on GPU with version 3
-            startTime(&timer);
-            nw_gpu3(reference_d, query_d, matrix_d, N);
-            cudaDeviceSynchronize();
-            stopTime(&timer);
-            printElapsedTime(timer, "GPU kernel time (version 3)", GREEN);
-
-            // Copy data from GPU
-            startTime(&timer);
-            cudaMemcpy(matrix_gpu, matrix_d, N*N*sizeof(int), cudaMemcpyDeviceToHost);
-            cudaDeviceSynchronize();
-            stopTime(&timer);
-            printElapsedTime(timer, "Copy from GPU time");
-
-            // Verify
-            verify(matrix_cpu, matrix_gpu, N);
-
-        }
-
-        // Free GPU memory
+        // Free memory
         startTime(&timer);
         cudaFree(reference_d);
         cudaFree(query_d);
