@@ -75,6 +75,7 @@ int main(int argc, char**argv) {
         switch(opt) {
             case 'N': N = atoi(optarg);     break;
             case '0': runGPUVersion0 = 1;   break;
+            case '1': runGPUVersion1 = 1;   break;
             default:  fprintf(stderr, "\nUnrecognized option!\n");
                       exit(0);
         }
