@@ -2,12 +2,11 @@
 
 #SBATCH --job-name=nw
 
-#SBATCH --partition=cudadev
+#SBATCH --partition=gpu
 #SBATCH --gres=gpu
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=rae66@aub.edu.lb
 
-module load python/3
 module load python/pytorch
 module load cuda/latest
 
