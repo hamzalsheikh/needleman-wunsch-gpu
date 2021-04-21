@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <cuda_profiler_api.h>
 
 #include "common.h"
 #include "timer.h"
@@ -212,6 +213,8 @@ int main(int argc, char**argv) {
     free(query);
     free(matrix_cpu);
     free(matrix_gpu);
+
+    cudaProfilerStop();
 
     return 0;
 

@@ -3,7 +3,7 @@
 #include <cuda_profiler_api.h>
 
 #define COARSE_FACTOR 2 
-#define BLOCK_DIM 1024
+#define BLOCK_DIM 512
 
 __global__ void nw_upper_left_kernel2(unsigned char* reference, unsigned char* query, int* matrix, unsigned int N, int verticalBlockOffset, int horizontalBlockOffset) {
 
