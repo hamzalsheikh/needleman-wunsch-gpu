@@ -78,6 +78,7 @@ int main(int argc, char**argv) {
             case '0': runGPUVersion0 = 1;   break;
             case '1': runGPUVersion1 = 1;   break;
             case '2': runGPUVersion2 = 1;   break;
+            case '3': runGPUVersion3 = 1;   break;
             default:  fprintf(stderr, "\nUnrecognized option!\n");
                       exit(0);
         }
@@ -184,6 +185,32 @@ int main(int argc, char**argv) {
             cudaDeviceSynchronize();
             stopTime(&timer);
             printElapsedTime(timer, "GPU kernel time (version 2)", GREEN);
+
+            // Copy data from GPU
+            startTime(&timer);
+            cudaMemcpy(matrix_gpu, matrix_d, N*N*sizeof(int), cudaMemcpyDeviceToHost);
+            cudaDeviceSynchronize();
+            stopTime(&timer);
+            printElapsedTime(timer, "Copy from GPU time");
+
+            // Verify
+            verify(matrix_cpu, matrix_gpu, N);
+
+        }
+
+        if(runGPUVersion3) {
+
+
+            // Reset
+            cudaMemset(matrix_d, 0, N*N*sizeof(int));
+            cudaDeviceSynchronize();
+
+            // Compute on GPU with version 3
+            startTime(&timer);
+            nw_gpu3(reference_d, query_d, matrix_d, N);
+            cudaDeviceSynchronize();
+            stopTime(&timer);
+            printElapsedTime(timer, "GPU kernel time (version 3)", GREEN);
 
             // Copy data from GPU
             startTime(&timer);
