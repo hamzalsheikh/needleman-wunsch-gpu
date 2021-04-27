@@ -1,9 +1,16 @@
 #include "common.h"
 #include "timer.h"
 
-#define BLOCK_DIM 1024
+#define BLOCK_DIM 256
+#define WARP_SIZE 32
 
 __global__ void nw_upper_left_kernel3(unsigned char* reference, unsigned char* query, int* matrix, unsigned int N, int verticalBlockOffset, int horizontalBlockOffset) {
+
+    // Arbitrary values just to avoid warnings
+    int topPrev = -1, leftPrev = -1;
+    int max = -1;
+
+    unsigned int activeMask = (1 << (threadIdx.x - 1)) | (1 << (threadIdx.x));
 
     __shared__ int leftCol_s[BLOCK_DIM];
     __shared__ int upperRow_s[BLOCK_DIM];
@@ -35,13 +42,18 @@ __global__ void nw_upper_left_kernel3(unsigned char* reference, unsigned char* q
         int diagStartCol = startCol;
         int outRow = diagStartRow - threadIdx.x;
         int outCol = diagStartCol + threadIdx.x;
-        // Arbitrary value just for the code to compile
-        int max = -1;
+
+        int valFromShflUpSync = __shfl_up_sync(activeMask, max, 1);
 
         if (threadIdx.x <= i && outRow < N && outCol < N) {
+
+            leftPrev = threadIdx.x == 0 ? 0 :
+(threadIdx.x%WARP_SIZE == 0) ? ptrDiagonal2_s[threadIdx.x-1] :
+valFromShflUpSync;
+
             // Get neighbors
-            int top = (outRow == 0)?((outCol + 1)*DELETION):(outRow == startRow ? upperRow_s[threadIdx.x] : ptrDiagonal2_s[threadIdx.x]);
-            int left = (outCol == 0) ? ((outRow + 1)*INSERTION) : (threadIdx.x== 0 ? leftCol_s[i] : (ptrDiagonal2_s[threadIdx.x - 1]));
+            int top = (outRow == 0)?((outCol + 1)*DELETION):(outRow == startRow ? upperRow_s[threadIdx.x] : topPrev);
+            int left = (outCol == 0) ? ((outRow + 1)*INSERTION) : (threadIdx.x== 0 ? leftCol_s[i] : leftPrev);
             int topleft = (outRow == 0) ? (outCol*DELETION) :
 ((outCol == 0) ? (outRow*INSERTION) :
 ((threadIdx.x == 0 && i == 0) ? (matrix[(outRow - 1)* N + outCol - 1]) :
@@ -57,7 +69,10 @@ __global__ void nw_upper_left_kernel3(unsigned char* reference, unsigned char* q
             max = (insertion > deletion)?insertion:deletion;
             max = (match > max)?match:max;
             matrix[outRow *N + outCol] = max;
+
+            topPrev = max;
         }
+
         __syncthreads();
 
         // Update the diagonals and swap them
@@ -76,6 +91,12 @@ __global__ void nw_upper_left_kernel3(unsigned char* reference, unsigned char* q
 }
 
 __global__ void nw_lower_right_kernel3(unsigned char* reference, unsigned char* query, int* matrix, unsigned int N, int verticalBlockOffset, int horizontalBlockOffset) {
+
+    // Arbitrary values just to avoid warnings
+    int topPrev = -1, leftPrev = -1;
+    int max = -1;
+
+    unsigned int activeMask = (1 << (threadIdx.x + 1)) | (1 << (threadIdx.x));
 
     __shared__ int diagonal1_s[BLOCK_DIM];
     __shared__ int diagonal2_s[BLOCK_DIM];
@@ -100,14 +121,18 @@ __global__ void nw_lower_right_kernel3(unsigned char* reference, unsigned char* 
         int diagStartCol = startCol + (blockDim.x - 2 - i);
         int outRow = diagStartRow - threadIdx.x;
         int outCol = diagStartCol + threadIdx.x;
-        // Arbitrary value just for the code to compile
-        int max = -1;
+
+        int valFromShflDownSync = __shfl_down_sync(activeMask, max, 1);
 
         if (threadIdx.x <= i && outRow < N && outCol < N) {
 
+            topPrev = (i == blockDim.x - 2) ? 0:
+(threadIdx.x%WARP_SIZE == WARP_SIZE - 1) ? ptrDiagonal2_s[threadIdx.x + 1] :
+valFromShflDownSync;
+
             // Get neighbors
-            int top = (outRow == 0)?((outCol + 1)*DELETION):(i == blockDim.x - 2 ? ptrDiagonal1_s[threadIdx.x + 1] : ptrDiagonal2_s[threadIdx.x + 1]);
-            int left = (outCol == 0)?((outRow + 1)*INSERTION):((i == blockDim.x - 2) ? ptrDiagonal1_s[threadIdx.x] : ptrDiagonal2_s[threadIdx.x]);
+            int top = (outRow == 0)?((outCol + 1)*DELETION):(i == blockDim.x - 2 ? ptrDiagonal1_s[threadIdx.x + 1] : topPrev);
+            int left = (outCol == 0)?((outRow + 1)*INSERTION):((i == blockDim.x - 2) ? ptrDiagonal1_s[threadIdx.x] : leftPrev);
 
             int topleft = (outRow == 0)?(outCol*DELETION):
 ((outCol == 0)?(outRow*INSERTION):
@@ -124,6 +149,7 @@ __global__ void nw_lower_right_kernel3(unsigned char* reference, unsigned char* 
             max = (match > max)?match:max;
             matrix[outRow*N + outCol] = max;
 
+            leftPrev = max;
         }
         __syncthreads();
 
