@@ -26,5 +26,6 @@ Optional flags:
   -0        run GPU version 0
   -1        run GPU version 1
   -2        run GPU version 2
+  -3        run GPU version 3
 
 ```
