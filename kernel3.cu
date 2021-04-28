@@ -80,8 +80,6 @@ valFromShflUpSync;
             ptrDiagonal1_s[threadIdx.x] = max;
         }
 
-        __syncthreads();
-
         int* temp = ptrDiagonal1_s;
         ptrDiagonal1_s = ptrDiagonal2_s;
         ptrDiagonal2_s = temp;
@@ -165,8 +163,6 @@ valFromShflDownSync;
             if (threadIdx.x <= i && outRow < N && outCol < N) {
                 ptrDiagonal1_s[threadIdx.x] = max;
             }
-
-            __syncthreads();
 
             int* temp = ptrDiagonal1_s;
             ptrDiagonal1_s = ptrDiagonal2_s;
